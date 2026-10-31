@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://sssp-backend.onrender.com',
 });
 
 api.interceptors.request.use((config) => {
@@ -36,7 +36,7 @@ export const getErrorMessage = (err, fallback = 'Something went wrong. Please tr
     if (data.message) return data.message;
   }
   if (err?.request && !err.response) {
-    return 'Cannot reach the server at http://localhost:8080. Is the backend running?';
+    return 'Cannot reach the server at https://sssp-backend.onrender.com. Is the backend running?';
   }
   return err?.message || fallback;
 };
