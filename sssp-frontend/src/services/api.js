@@ -37,6 +37,7 @@ export const getErrorMessage = (err, fallback = 'Something went wrong. Please tr
   }
   if (err?.request && !err.response) {
     return 'Cannot reach the server at https://sssp-backend.onrender.com. Is the backend running?';
+  
   }
   return err?.message || fallback;
 };
@@ -44,8 +45,8 @@ export const getErrorMessage = (err, fallback = 'Something went wrong. Please tr
 export default api;
 
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data)
+  register: (data) => api.post('/api/auth/register', data),
+  login: (data) => api.post('/api/auth/login', data)
 };
 
 // Player endpoints. Called with no argument they target the authenticated player (/players/me, identity
