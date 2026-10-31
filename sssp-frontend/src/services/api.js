@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isAuthCall = (error.config?.url || '').startsWith('/auth/');
+    const isAuthCall = (error.config?.url || '').startsWith('/api/auth/');
     if (error.response && error.response.status === 401 && !isAuthCall) {
       localStorage.removeItem('sssp_token');
       localStorage.removeItem('sssp_user');
