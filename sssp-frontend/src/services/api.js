@@ -1,7 +1,18 @@
 import axios from 'axios';
 
+// Backend controllers are mounted under /api. Accept either a host-only URL
+// or a URL that already includes /api in Vercel's environment variable.
+const configuredApiBase = (
+  process.env.REACT_APP_API_BASE_URL || 'https://sssp-backend.onrender.com'
+).trim().replace(/\/+$/, '');
+
+const apiBaseURL = /\/api$/i.test(configuredApiBase)
+  ? configuredApiBase
+  : `${configuredApiBase}/api`;
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://sssp-backend.onrender.com',
+  baseURL: apiBaseURL,
+  timeout: 20000,
 });
 
 api.interceptors.request.use((config) => {
@@ -15,7 +26,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isAuthCall = (error.config?.url || '').startsWith('/api/auth/');
+    const isAuthCall = (error.config?.url || '').startsWith('/auth/');
     if (error.response && error.response.status === 401 && !isAuthCall) {
       localStorage.removeItem('sssp_token');
       localStorage.removeItem('sssp_user');
@@ -45,8 +56,8 @@ export const getErrorMessage = (err, fallback = 'Something went wrong. Please tr
 export default api;
 
 export const authService = {
-  register: (data) => api.post('/api/auth/register', data),
-  login: (data) => api.post('/api/auth/login', data)
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data)
 };
 
 // Player endpoints. Called with no argument they target the authenticated player (/players/me, identity
