@@ -17,7 +17,7 @@ server:
   port: ${PORT:8080}
 app:
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://sssp-frontend-neon.vercel.app}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,https://sssp-frontend-neon.vercel.app,https://sssp-frontend-b8ko3rmmv-lifeisahobby3-4312.vercel.app,https://sssp-frontend-*.vercel.app}
   jwt:
     # Dev-only fallback. Always set JWT_SECRET (base64, >= 256 bits) outside local development.
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}

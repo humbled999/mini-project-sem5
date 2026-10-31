@@ -10,6 +10,9 @@ import com.sssp.auth.AuthService;
 import com.sssp.auth.dto.RegisterRequest;
 import com.sssp.common.exception.BadRequestException;
 import com.sssp.common.exception.UnauthorizedException;
+import com.sssp.config.SecurityConfig;
+import com.sssp.security.JwtAuthenticationEntryPoint;
+import com.sssp.security.JwtAuthenticationFilter;
 import com.sssp.security.RateLimitingFilter;
 import com.sssp.user.User;
 import com.sssp.user.UserRepository;
@@ -23,6 +26,9 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Optional;
 
@@ -127,5 +133,34 @@ public class SecurityAndWorkflowTest {
             filter.doFilter(request, response, chain);
             assertEquals(200, response.getStatus());
         }
+    }
+
+    @Test
+    @DisplayName("Security: CORS configuration allows production and preview Vercel origins and rejects unauthorized origins")
+    void testCorsConfigurationAllowsConfiguredOriginsAndPatterns() {
+        SecurityConfig securityConfig = new SecurityConfig(
+                new JwtAuthenticationFilter(),
+                new JwtAuthenticationEntryPoint(),
+                new RateLimitingFilter()
+        );
+        ReflectionTestUtils.setField(
+                securityConfig,
+                "allowedOrigins",
+                " http://localhost:3000 , https://sssp-frontend-neon.vercel.app/ , https://sssp-frontend-b8ko3rmmv-lifeisahobby3-4312.vercel.app , https://sssp-frontend-*.vercel.app "
+        );
+
+        CorsConfigurationSource source = securityConfig.corsConfigurationSource();
+        MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/auth/login");
+        CorsConfiguration corsConfig = source.getCorsConfiguration(request);
+
+        assertNotNull(corsConfig);
+        assertEquals(Boolean.TRUE, corsConfig.getAllowCredentials());
+        assertEquals("https://sssp-frontend-neon.vercel.app",
+                corsConfig.checkOrigin("https://sssp-frontend-neon.vercel.app"));
+        assertEquals("https://sssp-frontend-b8ko3rmmv-lifeisahobby3-4312.vercel.app",
+                corsConfig.checkOrigin("https://sssp-frontend-b8ko3rmmv-lifeisahobby3-4312.vercel.app"));
+        assertEquals("https://sssp-frontend-preview123.vercel.app",
+                corsConfig.checkOrigin("https://sssp-frontend-preview123.vercel.app"));
+        assertNull(corsConfig.checkOrigin("https://malicious-attacker.example.com"));
     }
 }

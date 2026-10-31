@@ -26,7 +26,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isAuthCall = (error.config?.url || '').startsWith('/auth/');
+    const reqUrl = error.config?.url || '';
+    const isAuthCall =
+      reqUrl.startsWith('/auth/login') ||
+      reqUrl.startsWith('/auth/register') ||
+      reqUrl.startsWith('/api/auth/login') ||
+      reqUrl.startsWith('/api/auth/register');
     if (error.response && error.response.status === 401 && !isAuthCall) {
       localStorage.removeItem('sssp_token');
       localStorage.removeItem('sssp_user');
@@ -47,8 +52,7 @@ export const getErrorMessage = (err, fallback = 'Something went wrong. Please tr
     if (data.message) return data.message;
   }
   if (err?.request && !err.response) {
-    return 'Cannot reach the server at https://sssp-backend.onrender.com. Is the backend running?';
-  
+    return `Cannot reach the server at ${apiBaseURL}. Please verify the backend is running and CORS is configured.`;
   }
   return err?.message || fallback;
 };
@@ -57,7 +61,8 @@ export default api;
 
 export const authService = {
   register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data)
+  login: (data) => api.post('/auth/login', data),
+  me: () => api.get('/auth/me'),
 };
 
 // Player endpoints. Called with no argument they target the authenticated player (/players/me, identity
